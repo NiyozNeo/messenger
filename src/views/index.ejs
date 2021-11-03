@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/index.css">
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <nav>
+          <ul class="nav-list">
+            <li> <a href="/">Home</a> </li>
+            <li> <a href="/user/<%=decoded.username%>">My accaunt</a> </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <div class="container">
+
+      <ul class="posts-list" id="bijirbjir">
+        <% data.forEach(element => { %>
+        <li class="post">
+          <a class="post-nav" href="/user/<%=element.username%>"><%=`@${element.username}` %></a>
+          <% if(element.type){ %>
+              <img
+              width="500"
+              height="500"
+              alt="salom"
+              src="/public/<%=element.poster%>"
+              />
+          <% } else { %>
+              <video autoplay controls width="500" height="500"><source src="/public/<%=element.poster%>" /> </video>
+          <% } %>
+          <p class="post-title"><%=element.title %></p>
+
+          <% }) %>
+      
+      </ul>
+    </div>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script>
+    <script>
+      const socket = io("http://localhost:4000", {
+        transports: ["websocket"]
+      });
+      function sdfsdfsdf (data) {
+        bijirbjir.innerHTML = ""
+        
+        if(data.length > 0) {     
+          data.forEach(element => {
+            let li = document.createElement("li")
+            li.classList.add("post")     
+            let link = document.createElement("a")
+            link.textContent = `@${element.username}`
+            link.href = `/user/${element.username}`
+            link.classList.add("post-nav")
+            li.appendChild(link)
+            let p = document.createElement("p")
+            p.textContent = element.title
+            p.classList.add("post-title")
+            li.appendChild(p)
+            bijirbjir.appendChild(li)
+          });
+        }
+        
+      }
+      socket.on("newpost" , sdfsdfsdf)
+      socket.on("change" , sdfsdfsdf)
+    </script>
+  </body>
+</html>

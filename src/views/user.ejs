@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/index.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+          <nav>
+            <ul class="nav-list">
+              <li> <a href="/">Home</a> </li>
+              <li> <a href="/user/<%=found.username%>">My accaunt</a> </li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+    <div class="container">
+        <div class="user">
+            <img width="300" height="300" style="border-radius: 100%;" src="/public/<%=found.poster %>" alt="">
+            <div class="user-name">
+                <h1 class="user__username"><%= found.username %></h1>
+            <h2><%= found.fname + " " + found.lname %></h2>
+            </div>
+        </div>
+        <div class="wrapper">
+            <ul id="bijirbjir" class="posts-list">
+                <% if (postsFound) { %>
+                    <% postsFound.forEach(element => { %>
+                  <li class="post">
+                    <a class="post-nav" href="/user/<%=element.username%>"><%=`@${element.username}` %></a>
+            
+                    <% if(element.type){ %>
+                        <img
+                        width="500"
+                        height="500"
+                        alt="salom"
+                        src="/public/<%=element.poster%>"
+                        />
+                    <% } else { %>
+                        <video autoplay controls width="500" height="500"><source src="/public/<%=element.poster%>" /> </video>
+                    <% } %>
+                    <p class="post-title"><%=element.title %></p>
+                    <% if(found.current) { %>
+                    <button class="button" data-id="<%=element.id %>">delete</button>
+                    <% } %>
+                    <% }) %>
+                    <% } %>
+                  </li>
+            
+            </ul>
+            <% if (found.current) { %>
+                <form  action="/user" method="post" enctype="multipart/form-data"> <input type="text" name="title" required> <input type="file" name="poster" required> <button type="submit">submit</button> </form>
+            <%} %>
+        </div>
+          
+    </div>
+    
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script>
+    <script>    
+      const socket = io("http://localhost:4000", {
+        transports: ["websocket"]
+      });
+      let buttons = document.querySelectorAll(".button")
+      buttons.forEach((button)=> {
+        button.onclick = (e) => {
+        button.dataset.id
+          socket.emit("delete" , button.dataset.id)
+          console.log(button);
+      }
+      })
+      
+    
+      socket.on("change" ,(data)=> {
+        bijirbjir.innerHTML = ""
+        let li = document.createElement("li")
+        li.classList.add("post")
+        if(data.length > 0) {
+          
+          data.forEach(element => {
+            
+            let link = document.createElement("a")
+            link.textContent = `@${element.username}`
+            link.href = `/user/${element.username}`
+            link.classList.add("post-nav")
+            li.appendChild(link)
+
+            if(element.type) {
+              let img = document.createElement("img")
+              img.width = 500
+              img.height = 500
+              img.src = `/public/${element.poster}`
+              li.appendChild(img)
+            } else {
+              let video = document.createElement("video")
+              video.controls = true 
+              video.width = 500
+              video.height = 500
+
+              let source = document.createElement("source")
+              source.src = `/public/${element.poster}`
+              video.appendChild(source)
+              li.appendChild(video)
+              
+            }
+            let p = document.createElement("p")
+              p.textContent = element.title
+              p.classList.add("post-title")
+
+            let button = document.createElement("button")
+            button.classList.add("button")
+            button.dataset.id = element.id
+            button.textContent = "delete"
+            button.onclick = (e) => {
+            button.dataset.id
+            socket.emit("delete" , button.dataset.id)
+            }
+            li.appendChild(p)
+            li.appendChild(button)
+          });
+        }
+        bijirbjir.appendChild(li)
+      })
+
+      
+    </script>
+</body>
+</html>
